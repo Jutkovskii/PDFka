@@ -65,22 +65,18 @@ PDFAdapter pdfAdapter;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_p_d_f_view);
 
-
-
-
         Intent intent = getIntent();
-         uri = intent.getData();
+         uri = intent.getData();//получение uri файла для отображения
+
+        filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+        currentPDF  =getFileFromUri(uri);
 
         ActionBar actionBar = getSupportActionBar();
-
-
-filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
-        currentPDF  =getFileFromUri(uri);
         actionBar.setTitle(filename);
-        //RecyclerView pdfView = findViewById(R.id.pdf_view);
+
         ConstraintLayout pdfLayout = findViewById(R.id.pdfLayout);
         pdfView = new PinchRecyclerView(this);
-//
+
         ViewGroup.LayoutParams params = pdfLayout.getLayoutParams();
         pdfView.setLayoutParams(params);
 
@@ -91,38 +87,6 @@ filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
        // registerForContextMenu(pdfView);
         pdfView.scrollToPosition(load(uri));
 
-       /* pdfView.setOnTouchListener(new View.OnTouchListener() {
-            float mx=0, my=0;
-            @Override
-            public boolean onTouch(View arg0, MotionEvent event) {
-
-                float curX, curY;
-
-                switch (event.getAction()) {
-
-                    case MotionEvent.ACTION_DOWN:
-                        mx = event.getX();
-                        my = event.getY();
-                        //pdfView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        curX = event.getX();
-                        curY = event.getY();
-                        pdfView.scrollBy((int) (mx - curX), (int) (my - curY));
-                        mx = curX;
-                        my = curY;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        curX = event.getX();
-                        curY = event.getY();
-                        pdfView.scrollBy((int) (mx - curX), (int) (my - curY));
-                       // pdfView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                        break;
-                }
-
-                return true;
-            }
-        });*/
     }
 
     void init(int pos){
@@ -139,6 +103,8 @@ filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
         }
 
     }
+
+    //получение файла из uri
     File getFileFromUri(Uri uri){
         File tempFile=null;
         try {
@@ -162,6 +128,7 @@ return tempFile;
 
     }
 
+    //сохранение информации о файле (номер последней открытой страницы)
     void save(Uri uri,int pos){
         sPref = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor ed = sPref.edit();
@@ -169,6 +136,8 @@ return tempFile;
         ed.putInt("page", pos);
         ed.commit();
     }
+
+    //если файл ранее был открыт на какой-то странице, скролл до неё
     int load(Uri uri){
         sPref = getPreferences(MODE_PRIVATE);
         String qwe =sPref.getString("Uri", "");
@@ -190,16 +159,17 @@ return tempFile;
         save(uri,pdfAdapter.page);
     }
 
+    //обработка нажатий контекстного меню
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         try {
-            if (item.getOrder() == 3) {
+            if (item.getOrder() == 3) {//удаление страницы
                 int page = item.getItemId();
                 pdfAdapter.deletePage(page);
             }
 
-            if (item.getOrder() == 6) {
+            if (item.getOrder() == 6) {//редактирование страницы
                 int page = item.getItemId();
 
                 PdfRenderer.Page tempPage = null;
@@ -208,6 +178,7 @@ return tempFile;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                //получение битмапа выбранной страницы и отправка на редактирование
                 Bitmap pageBitmap = Bitmap.createBitmap(tempPage.getWidth(), tempPage.getHeight(), Bitmap.Config.ARGB_8888);
                 tempPage.render(pageBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
                 Intent intent = new Intent(this, WorkActivity.class);
@@ -221,6 +192,8 @@ return tempFile;
         return super.onContextItemSelected(item);
     }
 
+    //обработка результатов редактирования
+    //возврат измененной страницы и отображение её вместо изначальной
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

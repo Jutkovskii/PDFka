@@ -38,15 +38,15 @@ public class PDFAdapter extends RecyclerView.Adapter<PDFAdapter.ViewHolder> impl
     PdfRenderer pdfRenderer;
     LayoutInflater inflater;
     Context context;
-    public PdfRenderer.Page curPage;
+    public PdfRenderer.Page curPage;//текущая страница
     public int page = 0;
     public int prevPage=0;
     public int deletedPage=0;
-ArrayList<Integer> toRemove;
-ArrayList<Integer> toShow;
-    ArrayList<Integer> deletedPagesList;
-    Map<Integer,Integer>deletedPages;
-ArrayList<Map<Integer, Bitmap>> changedPages;
+ArrayList<Integer> toRemove;//список номеров страниц для удаления
+ArrayList<Integer> toShow;//список номкеров страниц для отображения
+    ArrayList<Integer> deletedPagesList;//список номеров удаленных страниц
+    Map<Integer,Integer>deletedPages;//тэги удаленных страниц
+ArrayList<Map<Integer, Bitmap>> changedPages;//измененные страницы
     PDFAdapter(PdfRenderer pdfRenderer, Context context) {
         this.pdfRenderer = pdfRenderer;
         this.context = context;
@@ -67,39 +67,33 @@ public View localView;
         localView = inflater.inflate(R.layout.current_page, parent, false);
         ViewHolder holder = new ViewHolder(localView);
 
-        //holder.itemView.setTag(page);
         return holder;
 }
 
+//элемент стал отображаемым
     @Override
     public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-      /*  Log.d("OLOLOG", "A "+holder.getAdapterPosition()+" "+
-                holder.getLayoutPosition()+" "+
-                holder.getOldPosition()+ " "+
-                holder.getPosition());*/
+
         prevPage=page;
         page = holder.getAdapterPosition();
         holder.flagView.setTag(page);
 
     }
-
+//элемент вышел из поля видимости
     @Override
     public void onViewDetachedFromWindow(@NonNull ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-       /* Log.d("OLOLOG", "D "+holder.getAdapterPosition()+" "+
-                holder.getLayoutPosition()+" "+
-                holder.getOldPosition()+ " "+
-                holder.getPosition());*/
+
         deletedPage=holder.getPosition();
     }
-public Bitmap changed=null;
+
+    //отображение списка страниц
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         viewHolder=holder;
-//page= holder.getLayoutPosition();
-       // holder.flagView.setOnClickListener(this);
+
         holder.flagView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
@@ -108,35 +102,20 @@ public Bitmap changed=null;
                 contextMenu.add(4, position, 6, "Редактировать");
             }
         });
-        //Log.d("GSOM", "count "+ ViewHolder.count);
              Bitmap pageBitmap;
         try {
-
-
-
-
-            int sdvig=position;
-           /*for(Integer temp: toRemove){
-                if(temp<=position)
-                { sdvig++;
-                }
-            }*/
-
-           holder.itemView.setTag(sdvig);
-
-
-
+            //int sdvig=position;
+           holder.itemView.setTag(position);
              if (curPage != null)
                 curPage.close();
-             int temp = toShow.get(position);
+             int temp = toShow.get(position);//проверка, надо ли отображать
             curPage = pdfRenderer.openPage(temp);
-
-
             int imageWidth = curPage.getWidth();
             int imageHeight = curPage.getHeight();
             int displayWidth = context.getResources().getDisplayMetrics().widthPixels;
             int displayHeight = context.getResources().getDisplayMetrics().heightPixels;
             int bitmapWidth, bitmapHeight;
+            //проверка ориентации страницы
             if (imageWidth > imageHeight) {
                 bitmapWidth = displayWidth;
                 bitmapHeight = imageHeight;
@@ -144,28 +123,15 @@ public Bitmap changed=null;
                 bitmapWidth = imageWidth;
                 bitmapHeight = imageHeight;
             }
+
             int rotate=2;
 
             pageBitmap = Bitmap.createBitmap(bitmapWidth * rotate, bitmapHeight * rotate, Bitmap.Config.ARGB_8888);
 
             curPage.render(pageBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-
-            /*if(toRemove.contains(page))
-            {
-                InputStream bm = context.getResources().openRawResource(R.raw.pdf);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(bm);
-
-                Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
-                holder.flagView.setImageBitmap(bitmap);
-
-            }
-            else*/
-
-               for(Map <Integer,Bitmap> tmp: changedPages)
+               for(Map <Integer,Bitmap> tmp: changedPages)//проверка, изменена ли страница
                     if(tmp.containsKey(position)) {
-
                         pageBitmap=Bitmap.createScaledBitmap(tmp.get(position),bitmapWidth,bitmapHeight,false);
-                        //notifyDataSetChanged();
                     }
 
             holder.flagView.setImageBitmap(pageBitmap);
@@ -179,8 +145,6 @@ public Bitmap changed=null;
 
     @Override
     public int getItemCount() {
-        //return 0;
-        //int size = pdfRenderer.getPageCount()-toRemove.size();
         int size = toShow.size();
         return size;
     }
@@ -190,15 +154,12 @@ public Bitmap changed=null;
         int tag = (int) view.getTag();
 
         deletePage( tag);
-        /*if(tag!=page&&tag!=prevPage)
-            notifyDataSetChanged();*/
     }
-
+//удаление странцы
+    //страница вносится в список удаленных и ее отображение игнорируется
     public void deletePage(int tag){
-        //   if(!toRemove.contains(page))
         int removePage=-1;
         removePage=tag;
-//deletedPages.add(toShow.get(tag));
         deletedPagesList.add(toShow.get(tag));
         deletedPages.put(toShow.get(tag),tag);
         if(removePage!=-1)
@@ -208,17 +169,12 @@ public Bitmap changed=null;
             for(int i=removePage;i<toShow.size()-1;i++)
                 toShow.set(i,toShow.get(i+1));
             toShow.remove(toShow.size()-1);
-
-
             notifyDataSetChanged();
-
-
-            //notifyItemChanged(page);
             Toast toast = Toast.makeText(context,"page "+page+" tag "+tag +" prevPage "+prevPage, Toast.LENGTH_SHORT);
             toast.show();
         }
     }
-
+//отмена удаления страницы
     public void undo(){
         int currentList=deletedPagesList.get(deletedPagesList.size()-1);
         int currentTag=deletedPages.get(currentList);
@@ -237,13 +193,8 @@ public Bitmap changed=null;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView flagView;
         public CardView cardView;
-        public static int prevPage=0;
-        public static  int page=0;
         ViewHolder(View view) {
             super(view);
-
-//count++;
-
 cardView = (CardView) view.findViewById(R.id.cardView);
             flagView = (ImageView) view.findViewById(R.id.imageView);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);

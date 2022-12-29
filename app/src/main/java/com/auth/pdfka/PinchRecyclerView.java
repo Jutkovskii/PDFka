@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * @author yogesh *
  */
+//список с возможностью масштабирования
 public class PinchRecyclerView extends RecyclerView {
     private static final int INVALID_POINTER_ID = -1;
     private int mActivePointerId = INVALID_POINTER_ID;
@@ -62,13 +63,14 @@ public class PinchRecyclerView extends RecyclerView {
         return false;
     }
 
+    //определение касаний и характера действий
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent ev) {
         super.onTouchEvent(ev);
         final int action = ev.getAction();
         mScaleDetector.onTouchEvent(ev);
         switch (action & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN: {
+            case MotionEvent.ACTION_DOWN: {//начальные точки касания
                 final float x = ev.getX();
                 final float y = ev.getY();
                 mLastTouchX = x;
@@ -76,7 +78,7 @@ public class PinchRecyclerView extends RecyclerView {
                 mActivePointerId = ev.getPointerId(0);
                 break;
             }
-            case MotionEvent.ACTION_MOVE: { /* this line is replaced because here came below isssue java.lang.IllegalArgumentException: pointerIndex out of range ref http://stackoverflow.com/questions/6919292/pointerindex-out-of-range-android-multitouch */ //final int pointerIndex = ev.findPointerIndex(mActivePointerId);
+            case MotionEvent.ACTION_MOVE: {//определение перемещения по экрану
                 final int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 final float x = ev.getX(pointerIndex);
                 final float y = ev.getY(pointerIndex);
@@ -101,7 +103,7 @@ public class PinchRecyclerView extends RecyclerView {
                 mActivePointerId = INVALID_POINTER_ID;
                 break;
             }
-            case MotionEvent.ACTION_POINTER_UP: {
+            case MotionEvent.ACTION_POINTER_UP: {//конечные точки (пальцы убрали)
                 final int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 final int pointerId = ev.getPointerId(pointerIndex);
                 if (pointerId == mActivePointerId) {
@@ -117,6 +119,7 @@ public class PinchRecyclerView extends RecyclerView {
         return true;
     }
 
+    //отрисовка с учетом масштабирования
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -140,6 +143,7 @@ public class PinchRecyclerView extends RecyclerView {
         invalidate();
     }
 
+    //получение коэффициентов масштабирования
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {

@@ -6,7 +6,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-
+//изображения точек рамки
 public class BorderPointerFactory extends androidx.appcompat.widget.AppCompatImageView {
 
     public static int sdvig=0;

@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-
+//рамка для обрезки
 public class CutLayout extends FrameLayout //implements View.OnDragListener, View.OnTouchListener
 {
     Paint borderPaint;
@@ -20,6 +20,7 @@ public class CutLayout extends FrameLayout //implements View.OnDragListener, Vie
     CutFrameView cutView;
 BorderPointerFactory borderPointerFactory;
     ImageView leftTopPoint, rightBottomPoint;
+
     public CutLayout(@NonNull Context context) {
         super(context);
         params = new LayoutParams(LayoutParams.WRAP_CONTENT,

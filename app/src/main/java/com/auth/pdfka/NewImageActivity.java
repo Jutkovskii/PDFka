@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 
+//заготовка для добавления новых страниц
 public class NewImageActivity extends AppCompatActivity {
 
     ImageView imageView;

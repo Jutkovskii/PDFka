@@ -28,11 +28,14 @@ public class FileManagerSupport {
         if (fileManagerSupport == null) fileManagerSupport=new FileManagerSupport();
         return  fileManagerSupport;
     }
+    //установка критериев отображения файлов
     public  void setCriteria(String [] Criteria){
         criteria.clear();
        for(String crit: Criteria)
                 criteria.add(crit);
     }
+
+
     public void setCriteria(String Criteria){
         criteria.clear();
         if(Criteria.isEmpty())
@@ -55,6 +58,7 @@ public class FileManagerSupport {
                 return R.raw.file;
         }
     }
+    //получение списка файлов с учетом фильтра форматов
     public ArrayList<File> filter(ArrayList<File> contentFilesList) {
 
         contentFilesList.sort(new Comparator<File>() {

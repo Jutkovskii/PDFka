@@ -15,11 +15,11 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-
+//активность для редактирования битмапа
 public class WorkActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener, View.OnDragListener {
-    ConstraintLayout motherLayout;
-    FrameLayout imageLayout;
-    CutLayout cutLayout;
+    ConstraintLayout motherLayout;//лейаут активности
+    FrameLayout imageLayout;//лейаут изображения
+    CutLayout cutLayout;//лейаут рамки обрезки
     Button cutButton, backButton;
     int maxHeight,maxWidth;
     View selected_item = null;
@@ -37,52 +37,6 @@ public class WorkActivity extends AppCompatActivity implements View.OnTouchListe
         backButton.setOnClickListener(this);
         imageLayout = findViewById(R.id.imageLayout);
 
-        /*imageLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN||motionEvent.getAction()==MotionEvent.ACTION_MOVE){
-                    selected_item = view;
-                    maxHeight=imageLayout.getHeight();
-                    maxWidth=imageLayout.getWidth();
-                    double pointX=motionEvent.getX();
-                    double pointY = motionEvent.getY();
-                    if(pointY<0) pointY=0;
-                    if(pointY>maxHeight) pointY=maxHeight;
-                    int centerX = cutLayout.params.leftMargin+cutLayout.params.width/2;
-                    int centerY = cutLayout.params.topMargin+cutLayout.params.height/2;
-
-                    if(pointX>centerX)
-                    {
-                        cutLayout.params.gravity= Gravity.LEFT;
-                        cutLayout.params.rightMargin=maxWidth-(int)pointX;
-                    }
-                    else
-                    {
-
-                        cutLayout.params.leftMargin=(int)pointX;
-                        cutLayout.params.gravity= Gravity.RIGHT;
-                    }
-                    if(pointY>centerY)
-                    {
-                        cutLayout.params.gravity= Gravity.TOP;
-                        cutLayout.params.bottomMargin=maxHeight-(int)pointY;
-                    }
-                    else
-                    {
-                        cutLayout.params.gravity= Gravity.BOTTOM;
-                        cutLayout.params.topMargin=(int)pointY;
-                    }
-
-                    cutLayout.params.width=maxWidth-cutLayout.params.leftMargin-cutLayout.params.rightMargin;
-                    cutLayout.params.height=maxHeight-cutLayout.params.bottomMargin-cutLayout.params.topMargin;
-                    cutLayout.cutView.setLayoutParams(cutLayout.params);
-                    return true;
-                }
-
-                return false;
-            }
-
-        });*///под вопросом, может через анонимный класс?
         imageLayout.setOnTouchListener(this);
 
         imageLayout.addView(cutLayout);
@@ -93,12 +47,13 @@ cutLayout.leftTopPoint.setOnDragListener(this);
         imageView.setImageBitmap(bmp);
     }
 
+    //отработка надатия на кнопки
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.cutButton:{
+            case R.id.cutButton:{//обрезка
 
-                //определение коэффициента масштабирования изображение/рамка
+                //определение коэффициента масштабирования изображения/рамка
                 float ratioX = (float)bmp.getHeight()/(float)cutLayout.getHeight();
                 float ratioY = (float)bmp.getWidth()/(float)cutLayout.getWidth();
                 Log.d("OLOLOG", "bmp " + bmp.getHeight() +" layout "+cutLayout.getHeight() + " ratioX "+ratioX);
@@ -111,26 +66,22 @@ cutLayout.leftTopPoint.setOnDragListener(this);
                 //получение нового изображения и сохранение вместо старого
                 bmp = Bitmap.createBitmap(bmp,(int)(left*ratioY),(int)(top*ratioX),(int)((width)*ratioY),(int)((height)*ratioX));
                 imageView.setImageBitmap(bmp);
-                //а надо ли новую активность?
-                /*Intent intent = new Intent(this,NewImageActivity.class);
-                intent.setData(packBitmapToIntent(result));
-                startActivity(intent);*/
+
                 break;
             }
-            case R.id.backButton: {
+            case R.id.backButton: {//возврат
                Intent intent = new Intent();
                 intent.setData(Utils.packBitmapToIntent(WorkActivity.this,bmp));
                 setResult(1,intent);
                 finish();
-                /* Intent intent = new Intent(this,NewImageActivity.class);
-                intent.setData(Utils.packBitmapToIntent(WorkActivity.this,bmp));
-                startActivity(intent);*/
+
                 break;
             }
             default:break;
         }
     }
 
+    //отработка касаний по экрану
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction()==MotionEvent.ACTION_POINTER_DOWN)
@@ -143,9 +94,11 @@ cutLayout.leftTopPoint.setOnDragListener(this);
             double pointY = motionEvent.getY();
             if(pointY<0) pointY=0;
             if(pointY>maxHeight) pointY=maxHeight;
+            //получение точек рамки
             int centerX = cutLayout.params.leftMargin+cutLayout.params.width/2;
             int centerY = cutLayout.params.topMargin+cutLayout.params.height/2;
 
+            //отработка точек касания относительно рамки, чтобы понимать, какой край сдвигать
             if(pointX>centerX)
             {
                 cutLayout.rightBottomPoint.setX((int)pointX-cutLayout.leftTopPoint.getWidth()/2);
@@ -171,6 +124,7 @@ cutLayout.leftTopPoint.setOnDragListener(this);
                 cutLayout.params.topMargin=(int)pointY;
             }
 
+            //перерисовка рамки
             cutLayout.params.width=maxWidth-cutLayout.params.leftMargin-cutLayout.params.rightMargin;
             cutLayout.params.height=maxHeight-cutLayout.params.bottomMargin-cutLayout.params.topMargin;
             cutLayout.cutView.setLayoutParams(cutLayout.params);
@@ -180,6 +134,7 @@ cutLayout.leftTopPoint.setOnDragListener(this);
         return false;
     }
 
+    //не вызывается. А надо ли?
     @Override
     public boolean onDrag(View v, DragEvent event) {
         switch(event.getAction()) {
@@ -187,23 +142,10 @@ cutLayout.leftTopPoint.setOnDragListener(this);
             case DragEvent.ACTION_DRAG_ENDED   :
                 selected_item.setX( event.getX()-selected_item.getWidth()/2);
                 selected_item.setY(event.getY()-selected_item.getHeight()*7/3);
-                // if(selected_item.getId()==rightBottomPoint.getId())
-                // frame.setY(selected_item.getY());
-                // if(selected_item.getId()==rightBottomPoint.getId())
-                //redrawFrame((int)leftTopPoint.getX(), (int)leftTopPoint.getY(),(int)rightBottomPoint.getX(),(int) rightBottomPoint.getY());
-                //       v.setMinimumWidth((int) event.getX());
-//v.setMinimumHeight((int) event.getY());
                 Log.d("OLOLOG","X: " +event.getX()+ " Y: " + event.getY() + " Wid: "+v.getWidth()+" Hei: "+v.getHeight() + " corr x: "+ (event.getX()-v.getWidth()/2)+ " corr y: "+(event.getY()-v.getHeight()*7/3));
-/*v.setX((int) event.getX()-v.getWidth()/2);
-v.setY((int) event.getY()-v.getHeight()*7/3);*/
-                // Do nothing
+
                 break;
 
-                  /* case DragEvent.ACTION_DROP:
-
-
-                       // Do nothing
-                       break;*/
             default: break;
         }
         return true;

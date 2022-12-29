@@ -45,7 +45,7 @@ public class FileManagerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_manager);
-
+//проверка прав доступа к файловой системе
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
 
@@ -53,7 +53,7 @@ public class FileManagerActivity extends AppCompatActivity {
         init();
         }
     }
-
+//инициализация
     public void init(){
         itemListView=findViewById(R.id.itemList);
         itemListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -73,6 +73,7 @@ public class FileManagerActivity extends AppCompatActivity {
             }
         });
     }
+    //запрос прав на доступ к файловой системе
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -82,14 +83,14 @@ public class FileManagerActivity extends AppCompatActivity {
         { this.finishActivity(0);}
 
     }
-
+//отработка возврата
     @Override
     public void onBackPressed() {
 
      if(!prevDirPath.equals(rootDirPath))//нельзя выйти дальше корня
             getFolderContent(new File(prevDirPath));
     }
-
+//получение содержимого папки
     void getFolderContent(File folder){
         prevDirPath= folder.getParentFile().getAbsolutePath();//получение пути до предыдущей папки
         contentFilesList = new ArrayList<>(Arrays.asList(folder.listFiles()));//получение содержимого папки
@@ -109,7 +110,7 @@ public class FileManagerActivity extends AppCompatActivity {
         itemListView.setAdapter(itemListAdapter);
         registerForContextMenu(itemListView);
     }
-
+//передача файла в активность отображения
     void openFileInActivity(File file){
 
         Uri uri=null;
@@ -131,7 +132,7 @@ public class FileManagerActivity extends AppCompatActivity {
 
 
     }
-
+//адаптер отображения списка файлов
     class ItemListAdapter extends SimpleAdapter {
 
         public ItemListAdapter(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {

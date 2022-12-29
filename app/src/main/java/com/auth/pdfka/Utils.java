@@ -9,8 +9,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+//вспомогательные функции
 public class Utils {
 
+    //подготовка битмапа для отправки через интент
     public static Uri packBitmapToIntent(Activity activity,Bitmap bitmap){
         Uri uri=null;
 
@@ -29,6 +31,7 @@ public class Utils {
         return uri;
     }
 
+    //получение битмапа от интента
     public static Bitmap getBitmapFromIntent(Activity activity){
         try {
             return MediaStore.Images.Media.getBitmap(activity.getContentResolver(),activity.getIntent().getData());
